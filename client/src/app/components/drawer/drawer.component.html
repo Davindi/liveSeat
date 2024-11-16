@@ -1,0 +1,12 @@
+<button nz-button nzType="primary" (click)="open()">Sign Up</button>
+    <nz-drawer
+      [nzClosable]="false"
+      [nzVisible]="visible"
+      nzPlacement="right"
+      nzTitle="Basic Drawer"
+      (nzOnClose)="close()"
+    >
+      <ng-container *nzDrawerContent>
+        <app-login></app-login>
+      </ng-container>
+    </nz-drawer>
