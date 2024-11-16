@@ -1,0 +1,15 @@
+.navbar {
+    padding: 1rem;
+  }
+  
+  .nav-item button {
+    margin-left: 1rem;
+  }
+  
+  /* Optional: Style adjustments for responsiveness */
+  @media (max-width: 768px) {
+    .nav-item {
+      margin-bottom: 10px;
+    }
+  }
+  
