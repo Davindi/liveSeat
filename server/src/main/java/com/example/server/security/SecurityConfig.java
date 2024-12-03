@@ -29,7 +29,7 @@ public class SecurityConfig {
                                 "/v3/api-docs/**"
                         ).permitAll()
                         // Permit signup and signin endpoints
-                        .requestMatchers("/api/auth/signup", "/api/auth/signin").permitAll()
+                        .requestMatchers("/api/auth/signup", "/api/auth/signin","/api/configuration/**").permitAll()
                         // All other endpoints require authentication
                         .anyRequest().authenticated()
                 );
