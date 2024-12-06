@@ -46,7 +46,9 @@ public class SystemConfigurationService {
                 .orElseThrow(() -> new IllegalStateException("No configuration found. Cannot start system."));
         config.setSystemStarted(true);
         repository.save(config);
+        System.out.println("System started: " + config.getSystemStarted()); // Log for debugging
     }
+
 
     public void stopSystem() {
         SystemConfiguration config = repository.findTopByOrderByIdAsc()
@@ -54,4 +56,6 @@ public class SystemConfigurationService {
         config.setSystemStarted(false);
         repository.save(config);
     }
+
+
 }

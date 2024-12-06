@@ -8,6 +8,8 @@ import io.swagger.v3.oas.annotations.tags.Tag;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 
+import java.util.HashMap;
+import java.util.Map;
 import java.util.Optional;
 
 @RestController
@@ -37,17 +39,34 @@ public class SystemConfigurationController {
     }
 
     @PostMapping("/start")
-    public ResponseEntity<String> startSystem() {
+    public ResponseEntity<Map<String, String>> startSystem() {
+        Map<String, String> response = new HashMap<>();
         if (service.canStartSystem()) {
             service.startSystem();
-            return ResponseEntity.ok("System started successfully.");
+            response.put("message", "System started successfully.");
+            return ResponseEntity.ok(response);
         }
-        return ResponseEntity.badRequest().body("Cannot start system without a configuration.");
+        response.put("error", "Cannot start system without a configuration.");
+        return ResponseEntity.badRequest().body(response);
     }
 
+
     @PostMapping("/stop")
-    public ResponseEntity<String> stopSystem() {
+    public ResponseEntity<Map<String, String>> stopSystem() {
         service.stopSystem();
-        return ResponseEntity.ok("System stopped successfully.");
+        Map<String, String> response = new HashMap<>();
+        response.put("message", "System stopped successfully.");
+        return ResponseEntity.ok(response);
     }
+
+    @Operation(summary = "Get system status", description = "Returns whether the system is started or not.")
+    @GetMapping("/status")
+    public ResponseEntity<Boolean> getSystemStatus() {
+        SystemConfiguration config = service.getSystemConfiguration();
+        if (config == null) {
+            return ResponseEntity.badRequest().body(false); // Return false if no configuration exists
+        }
+        return ResponseEntity.ok(config.getSystemStarted());
+    }
+
 }
