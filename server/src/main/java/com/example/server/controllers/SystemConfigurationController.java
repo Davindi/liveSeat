@@ -69,4 +69,22 @@ public class SystemConfigurationController {
         return ResponseEntity.ok(config.getSystemStarted());
     }
 
+    @Operation(summary = "Validate ticketing configuration", description = "Validates ticketing parameters to ensure they meet constraints.")
+    @PostMapping("/validate")
+    public ResponseEntity<Map<String, String>> validateTicketingConfiguration(@RequestBody SystemConfiguration config) {
+        Map<String, String> response = new HashMap<>();
+
+        if (config.getTotalTickets() > config.getMaxTicketCapacity()) {
+            response.put("error", "Total tickets exceed the maximum ticket capacity.");
+            return ResponseEntity.badRequest().body(response);
+        }
+        if (config.getTicketReleaseRate() <= 0 || config.getCustomerRetrievalRate() <= 0) {
+            response.put("error", "Release rate and retrieval rate must be greater than zero.");
+            return ResponseEntity.badRequest().body(response);
+        }
+
+        response.put("message", "Ticketing configuration is valid.");
+        return ResponseEntity.ok(response);
+    }
+
 }

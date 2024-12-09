@@ -3,14 +3,10 @@ package com.example.server.controllers;
 import com.example.server.dto.EventRequest;
 import com.example.server.models.Event;
 import com.example.server.service.VendorService;
-import org.springframework.web.bind.annotation.RequestBody;
+import org.springframework.web.bind.annotation.*;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
-import org.springframework.web.bind.annotation.GetMapping;
-import org.springframework.web.bind.annotation.PostMapping;
-import org.springframework.web.bind.annotation.RequestMapping;
-import org.springframework.web.bind.annotation.RestController;
 
 import java.util.List;
 
@@ -24,14 +20,21 @@ public class VendorController {
     public VendorController(VendorService vendorService) {
         this.vendorService = vendorService;
     }
-    @GetMapping("/events")
-    public List<Event> getVendorEvents() {
-        return vendorService.getVendorEvents();
+    // Get events by vendor ID
+    @GetMapping("/{vendorId}/events")
+    public ResponseEntity<List<Event>> getVendorEvents(@PathVariable int vendorId) {
+        System.out.println(vendorId);
+        List<Event> events = vendorService.getVendorEvents(vendorId);
+        if (events.isEmpty()) {
+            System.out.println("no events");
+            return ResponseEntity.noContent().build();  // If no events found
+        }
+        return ResponseEntity.ok(events);  // Return the events
     }
 
-    @PostMapping("/add-event")
-    public ResponseEntity<?> addEvent(@RequestBody EventRequest eventRequest) {
-        System.out.println("Raw Payload: " + eventRequest.getEventName());
+    @PostMapping("/{vendorId}/add-event")
+    public ResponseEntity<?> addEvent(@PathVariable int vendorId,@RequestBody EventRequest eventRequest) {
+        System.out.println("Raw Payload: " + eventRequest);
 
 //        if (eventRequest == null) {
 //            System.out.println("EventRequest object is null!");
@@ -42,14 +45,37 @@ public class VendorController {
 //        }
 
         try {
-            Event event = vendorService.addEvent(eventRequest);
-            System.out.println("Event added: " + event.getEventName());
-            return ResponseEntity.ok(event);
+            vendorService.addEvent(vendorId,eventRequest);
+//            System.out.println("Event added: " + event.getEventName());
+            return  ResponseEntity.ok(eventRequest);
         } catch (Exception e) {
+            e.printStackTrace();
             System.out.println(e.getMessage());
             return ResponseEntity.badRequest().body(e.getMessage());
         }
     }
+
+    // Add more tickets to an event
+    @PutMapping("/events/{id}/addTickets")
+    public ResponseEntity<String> addMoreTickets(@PathVariable Long id, @RequestParam int additionalTickets) {
+        try {
+            vendorService.releaseMoreTickets(id, additionalTickets);
+            return ResponseEntity.ok("Tickets added successfully");
+        } catch (Exception e) {
+            return ResponseEntity.badRequest().body("Failed to add tickets: " + e.getMessage());
+        }
+    }
+
+    @PutMapping("/events/{eventId}/status")
+    public ResponseEntity<String> updateEventStatus(@PathVariable Long eventId, @RequestParam String status) {
+        try {
+            vendorService.updateEventStatus(eventId, status);
+            return ResponseEntity.ok("Event status updated successfully.");
+        } catch (RuntimeException e) {
+            return ResponseEntity.badRequest().body(e.getMessage());
+        }
+    }
+
 
 
 }

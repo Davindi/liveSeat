@@ -1,10 +1,6 @@
 package com.example.server.models;
 
-import jakarta.persistence.Entity;
-import jakarta.persistence.GeneratedValue;
-import jakarta.persistence.GenerationType;
-import jakarta.persistence.Id;
-import jakarta.persistence.Column;
+import jakarta.persistence.*;
 
 @Entity
 public class Event {
@@ -12,6 +8,11 @@ public class Event {
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     private Long id;
+//    @Column(name = "vender_name", nullable = true, length = 255)
+//    private String vendorName;
+    @ManyToOne
+    @JoinColumn(name = "vendor_id", nullable = false) // Assuming `User` represents a vendor
+    private User user;
 
     @Column(name = "event_name", nullable = true, length = 255)
     private String eventName;
@@ -27,15 +28,36 @@ public class Event {
 
     @Column(name = "total_tickets", nullable = false)
     private int totalTickets;
-    public Event() {}
-    public Event(Long id, String eventName, String status, double ticketPrice, int ticketsSold, int totalTickets) {
-        this.id = id;
-        this.eventName = eventName;
-        this.status = status;
-        this.ticketPrice = ticketPrice;
-        this.ticketsSold = ticketsSold;
-        this.totalTickets = totalTickets;
+
+    @Transient
+    public int getVendorId() {
+        return user != null ? user.getId() : null;
     }
+    public Event() {}
+    public Event(String vendorName, String eventName, int totalTickets, int ticketsSold, String status) {
+        //this.vendorName = vendorName;
+        this.eventName = eventName;
+        this.totalTickets = totalTickets;
+        this.ticketsSold = ticketsSold;
+        this.status = status;
+    }
+
+    public Event(String vendorName, String eventName, int totalTickets) {
+
+        //this.vendorName = vendorName;
+        this.eventName = eventName;
+        this.totalTickets = totalTickets;
+
+    }
+//    public Event(String vendorName,Long id, String eventName, String status, double ticketPrice, int ticketsSold, int totalTickets) {
+//        this.id = id;
+//        this.vendorName = vendorName;
+//        this.eventName = eventName;
+//        this.status = status;
+//        this.ticketPrice = ticketPrice;
+//        this.ticketsSold = ticketsSold;
+//        this.totalTickets = totalTickets;
+//    }
 
     // Getters and Setters
     public Long getId() {
@@ -44,6 +66,23 @@ public class Event {
 
     public void setId(Long id) {
         this.id = id;
+    }
+
+//    public String getVendorName() {
+//        return vendorName;
+//    }
+//
+//    public void setVendorName(String vendorName) {
+//        this.vendorName = vendorName;
+//    }
+
+
+    public User getUser() {
+        return user;
+    }
+
+    public void setUser(User user) {
+        this.user = user;
     }
 
     public String getEventName() {
@@ -84,5 +123,9 @@ public class Event {
 
     public void setTotalTickets(int totalTickets) {
         this.totalTickets = totalTickets;
+    }
+
+    public int getRemainingTickets() {
+        return totalTickets - ticketsSold;
     }
 }
