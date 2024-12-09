@@ -60,7 +60,8 @@ public class VendorController {
     public ResponseEntity<String> addMoreTickets(@PathVariable Long id, @RequestParam int additionalTickets) {
         try {
             vendorService.releaseMoreTickets(id, additionalTickets);
-            return ResponseEntity.ok("Tickets added successfully");
+            return ResponseEntity.ok("{\"message\": \"Tickets added successfully\"}");
+
         } catch (Exception e) {
             return ResponseEntity.badRequest().body("Failed to add tickets: " + e.getMessage());
         }
@@ -70,7 +71,8 @@ public class VendorController {
     public ResponseEntity<String> updateEventStatus(@PathVariable Long eventId, @RequestParam String status) {
         try {
             vendorService.updateEventStatus(eventId, status);
-            return ResponseEntity.ok("Event status updated successfully.");
+
+            return ResponseEntity.ok("{\"message\": \"Event status updated successfully.\"}");
         } catch (RuntimeException e) {
             return ResponseEntity.badRequest().body(e.getMessage());
         }

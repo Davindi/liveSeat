@@ -1,7 +1,7 @@
 package com.example.server.dto;
 
 public class EventRequest {
-    private String vendorName;
+    //private String vendorName;
     //private int vendorId;
     private String eventName;
     private String status; // Optional field if you want to set status in the request
@@ -11,13 +11,13 @@ public class EventRequest {
 
 
     // Getters and Setters
-    public String getVendorName() {
-        return vendorName;
-    }
-
-    public void setVendorName(String vendorName) {
-        this.vendorName = vendorName;
-    }
+//    public String getVendorName() {
+//        return vendorName;
+//    }
+//
+//    public void setVendorName(String vendorName) {
+//        this.vendorName = vendorName;
+//    }
 
 //    public int getVendorId() {
 //        return vendorId;
@@ -70,7 +70,7 @@ public class EventRequest {
     @Override
     public String toString() {
         return "EventRequest{" +
-                "vendorName='" + vendorName + '\'' +
+                //"vendorName='" + vendorName + '\'' +
 
                 ", eventName='" + eventName + '\'' +
                 ", status='" + status + '\'' +
