@@ -9,11 +9,12 @@ import { NzDrawerModule } from 'ng-zorro-antd/drawer';
 import {LoginComponent} from '../app/auth/login/login.component';
 import { NzLayoutModule } from 'ng-zorro-antd/layout';
 import {NavbarComponent} from '../app/components/navbar/navbar.component'
-
+import { ReactiveFormsModule } from '@angular/forms';
+import { NzTableModule } from 'ng-zorro-antd/table';
 @Component({
   selector: 'app-root',
   standalone: true,
-  imports: [RouterOutlet,NzIconModule, NzMenuModule,CommonModule,DrawerComponent,NzButtonModule, NzDrawerModule,LoginComponent,NzLayoutModule ,NavbarComponent],
+  imports: [RouterOutlet,NzIconModule, NzMenuModule,CommonModule,DrawerComponent,NzButtonModule, NzDrawerModule,LoginComponent,NzLayoutModule ,NavbarComponent, ReactiveFormsModule, NzTableModule,],
   templateUrl: './app.component.html',
   styleUrl: './app.component.css'
 })

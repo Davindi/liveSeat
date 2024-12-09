@@ -9,6 +9,7 @@ import { Router, RouterLink  } from '@angular/router';
 import { NonNullableFormBuilder, ReactiveFormsModule, Validators } from '@angular/forms';
 import { AppService } from '../../service/app.service';
 import { NzNotificationService } from 'ng-zorro-antd/notification';
+import {jwtDecode} from 'jwt-decode';
 @Component({
   selector: 'app-sign-up',
   standalone: true,
@@ -35,6 +36,22 @@ export class SignUpComponent {
     if (this.registerForm.valid) {
       this.appService.signUp(this.registerForm.value ).subscribe({
         next: (res) => {
+          const token = res.token;
+          localStorage.setItem('authToken', token);
+          // Decode the token
+          const userDetails: any = jwtDecode(token);
+          console.log('User Details:', userDetails);
+
+          // Navigate based on user role
+          if (userDetails.role === 'admin') {
+            this.router.navigate(['/admin/dashboard']);
+          } else if (userDetails.role === 'vendor') {
+            this.router.navigate(['/admin/system-control']);
+          } else if (userDetails.role === 'customer') {
+            this.router.navigate(['/events']);
+          } else {
+            alert('Unknown role!');
+          }
           this.notification.create(
             'success',
             'Registered Successfully!',

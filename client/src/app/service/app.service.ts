@@ -20,5 +20,49 @@ export class AppService {
 
     return this.http.post(this.BASE + '/auth/signin', data);
   }
+  // Get current system configuration
+  getSystemConfiguration(): Observable<any> {
+    return this.http.get(`${this.BASE}/configuration`);
+  }
 
+  // Create or update system configuration
+  saveSystemConfiguration(data: any): Observable<any> {
+    return this.http.post(`${this.BASE}/configuration`, data);
+  }
+
+  // Start the system
+  startSystem(): Observable<any> {
+    return this.http.post(`${this.BASE}/configuration/start`, {});
+  }
+
+  // Stop the system
+  stopSystem(): Observable<any> {
+    return this.http.post(`${this.BASE}/configuration/stop`, {});
+  }
+
+  getSystemStatus(): Observable<boolean> {
+    return this.http.get<boolean>(this.BASE + '/configuration/status');
+  }
+  
+
+  getVendorEvents(vendorId: any): Observable<any[]> {
+    return this.http.get<any[]>(`${this.BASE}/vendor/${vendorId}/events`);
+  }
+  
+
+  addEvent(vendorId: string, eventData: any): Observable<any> {
+    return this.http.post<any>(`${this.BASE}/vendor/${vendorId}/add-event`, eventData);
+  }
+
+  // Update event status (Activate/Deactivate)
+updateEventStatus(eventId: number, status: string): Observable<any> {
+  return this.http.put<any>(`${this.BASE}/vendor/events/${eventId}/status?status=${status}`, {});
+}
+
+
+  // Add more tickets to the event
+  addTickets(eventId: string, tickets: number): Observable<any> {
+    return this.http.put<any>(`${this.BASE}/vendor/events/${eventId}/addTickets`, { tickets });
+  }
+  
 }
