@@ -1,5 +1,7 @@
 package com.example.server.models;
 
+import com.example.server.repository.EventRepository;
+
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
@@ -9,9 +11,12 @@ import java.util.stream.Collectors;
 public class TicketPool {
     private final Map<String, Event> eventMap = new HashMap<>();
     private final SystemConfiguration config;
-    private final List<Event> events = new ArrayList<>();
-    public TicketPool(SystemConfiguration config) {
+    private final EventRepository eventRepository;
+    private  List<Event> events = new ArrayList<>();
+    public TicketPool(SystemConfiguration config, EventRepository eventRepository) {
         this.config = config;
+        this.eventRepository = eventRepository;
+        this.events = eventRepository.findAll();
     }
 
     public synchronized void addEvent(Event event) {
@@ -20,7 +25,10 @@ public class TicketPool {
         eventMap.put(event.getEventName(), event);
         System.out.println("Event added: " + event.getEventName() + " with status: " + event.getStatus());
     }
-
+    public synchronized List<Event> getAllEvents() {
+        //return new ArrayList<>(eventMap.values());
+        return eventRepository.findAll();
+    }
     public synchronized void changeEventStatus(String eventName, String status) {
         Event event = eventMap.get(eventName);
         if (event != null) {
@@ -83,6 +91,15 @@ public class TicketPool {
                 .collect(Collectors.toList());
     }
 
+    public boolean removeTickets(Long eventId, int tickets) {
+        Event event = eventRepository.findById(eventId).orElse(null);
+        if (event != null && event.getRemainingTickets() >= tickets) {
+            event.setTicketsSold(event.getTicketsSold() + tickets);
+            eventRepository.save(event);
+            return true;
+        }
+        return false;
+    }
 
 
 }

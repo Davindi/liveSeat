@@ -27,7 +27,7 @@ public class VendorService {
         if (config == null) {
             throw new IllegalStateException("System configuration not found. Please set up the configuration before starting vendors.");
         }
-        this.ticketPool = new TicketPool(config);
+        this.ticketPool = new TicketPool(config, eventRepository);
     }
 
 //    public void startVendors() {
