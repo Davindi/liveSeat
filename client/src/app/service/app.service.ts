@@ -64,5 +64,17 @@ updateEventStatus(eventId: number, status: string): Observable<any> {
   addTickets(eventId: string, tickets: number): Observable<any> {
     return this.http.put<any>(`${this.BASE}/vendor/events/${eventId}/addTickets`, { tickets });
   }
+//------------------------------customer--------------
+  getAllEvents(): Observable<any[]> {
+    return this.http.get<any>(this.BASE + '/customers/events');
+  }
+  
+  purchaseTickets(customerId: number, eventId: number, ticketCount: number) {
+    return this.http.post(`${this.BASE}/customers/purchase/${customerId}/${eventId}/${ticketCount}`, {});
+  }
+
+  getPurchasedTickets(customerId: number): Observable<any[]> {
+    return this.http.get<any[]>(`${this.BASE}/customers/purchased-tickets/${customerId}`);
+  }
   
 }
