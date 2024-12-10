@@ -29,6 +29,8 @@ public class Event {
     @Column(name = "total_tickets", nullable = false)
     private int totalTickets;
 
+    @Column(name = "event_image", nullable = true)
+    private String imageUrl;
     @Transient
     public int getVendorId() {
         return user != null ? user.getId() : null;
@@ -123,6 +125,14 @@ public class Event {
 
     public void setTotalTickets(int totalTickets) {
         this.totalTickets = totalTickets;
+    }
+
+    public String getImageUrl() {
+        return imageUrl;
+    }
+
+    public void setImageUrl(String imageUrl) {
+        this.imageUrl = imageUrl;
     }
 
     public int getRemainingTickets() {

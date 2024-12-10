@@ -8,6 +8,7 @@ public class EventRequest {
     private double ticketPrice;
     private int totalTickets;
     private int ticketsSold;
+    private String imageUrl;
 
 
     // Getters and Setters
@@ -67,6 +68,14 @@ public class EventRequest {
         this.ticketsSold = ticketsSold;
     }
 
+    public String getImageUrl() {
+        return imageUrl;
+    }
+
+    public void setImageUrl(String imageUrl) {
+        this.imageUrl = imageUrl;
+    }
+
     @Override
     public String toString() {
         return "EventRequest{" +
@@ -77,6 +86,7 @@ public class EventRequest {
                 ", ticketPrice=" + ticketPrice +
                 ", totalTickets=" + totalTickets +
                 ", ticketsSold=" + ticketsSold +
+                ", imageUrl=" + imageUrl +
                 '}';
     }
 }

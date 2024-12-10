@@ -66,6 +66,7 @@ public class VendorService {
         event.setTicketPrice(eventRequest.getTicketPrice());
         event.setTotalTickets(eventRequest.getTotalTickets());
         event.setTicketsSold(eventRequest.getTicketsSold());
+        event.setImageUrl(eventRequest.getImageUrl());
 
         // Save to DB
         eventRepository.save(event);

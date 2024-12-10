@@ -1,5 +1,6 @@
 package com.example.server.service;
 
+import com.example.server.dto.EventTicket;
 import com.example.server.enums.UserRole;
 import com.example.server.models.*;
 import com.example.server.repository.EventRepository;
@@ -48,8 +49,8 @@ public class CustomerService {
     public List<Event> getAllEvents() {
         return ticketPool.getAllEvents();
     }
-    public List<Event> getPurchasedTicketsByCustomer(int customerId) {
-        return eventRepository.findPurchasedTicketsByCustomerId(customerId);
+    public List<EventTicket> getPurchasedTicketsByCustomer(int customerId) {
+        return eventRepository.findPurchasedTicketsWithQuantityByCustomerId(customerId);
     }
 
     public String purchaseTicket(int customerId,Long eventId, int tickets ) {

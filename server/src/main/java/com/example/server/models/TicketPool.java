@@ -27,7 +27,7 @@ public class TicketPool {
     }
     public synchronized List<Event> getAllEvents() {
         //return new ArrayList<>(eventMap.values());
-        return eventRepository.findAll();
+        return eventRepository.findAllActiveEvents();
     }
     public synchronized void changeEventStatus(String eventName, String status) {
         Event event = eventMap.get(eventName);
