@@ -31,9 +31,9 @@
 - **Framework**: Angular (v17)
 - **State Management**: RxJS and Angular Services
 - **Real-Time Updates**: WebSocket integration
-- **UI Styling**: Tailwind CSS
+- **UI Styling**: Boostrp CSS
 - **Routing**: Angular Router
-- **Form Handling**: Angular Reactive Forms
+- **Form Handling**: ANTD
 - **HTTP Requests**: HttpClient module
 
 ---
