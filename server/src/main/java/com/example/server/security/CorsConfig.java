@@ -14,5 +14,10 @@ public class CorsConfig implements WebMvcConfigurer {
                 .allowedMethods("GET", "POST", "PUT", "DELETE", "OPTIONS")
                 .allowedHeaders("*")
                 .allowCredentials(true);
+
+//        // Allow the WebSocket endpoint to handle CORS requests
+//        registry.addMapping("/ws/")
+//                .allowedOrigins("http://localhost:4200")  // Same as front-end URL
+//                .allowCredentials(true);
     }
 }
