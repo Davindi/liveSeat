@@ -16,7 +16,7 @@ public class customer extends Thread {
             try {
                 Thread.sleep(7000); // Consume tickets every 3 seconds
             } catch (InterruptedException e) {
-                System.out.println("Consumer interrupted.");
+                System.out.println("coustomers interrupted.");
                 break;
             }
         }

@@ -16,7 +16,7 @@ public class Vendor extends Thread{
             try {
                 Thread.sleep(5000); // Produce tickets every 2 seconds
             } catch (InterruptedException e) {
-                System.out.println("Producer interrupted.");
+                System.out.println("Vendor interrupted.");
                 break;
             }
         }
