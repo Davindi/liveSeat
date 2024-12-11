@@ -32,7 +32,7 @@ public class AuthService {
 
     public User register(SignUpDto signUpDto) {
 
-        // Check if user already exists by username or email
+        // Check if user already exists by username
         if (userRepository.existsByUsername(signUpDto.getUsername())) {
             throw new UserAlreadyExistsException("Username is already taken");
         }

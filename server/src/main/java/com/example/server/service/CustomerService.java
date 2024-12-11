@@ -57,6 +57,10 @@ public class CustomerService {
     }
 
     public String purchaseTicket(int customerId,Long eventId, int tickets ) {
+        if (!ticketPool.canCustomerPurchase((long) customerId, tickets)) {
+            activityController.broadcastActivity("Ticket purchase limit exceeded. Please wait for the next available purchase window.");
+            return "Ticket purchase limit exceeded. Please wait for the next available purchase window.";
+        }
         boolean success = ticketPool.removeTickets(eventId, tickets);
         if (success) {
 

@@ -7,6 +7,7 @@ import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
+import java.util.concurrent.atomic.AtomicLong;
 import java.util.stream.Collectors;
 
 public class TicketPool {
@@ -14,12 +15,44 @@ public class TicketPool {
     private final SystemConfiguration config;
     private final EventRepository eventRepository;
     private  List<Event> events = new ArrayList<>();
+    private final Map<Long, AtomicLong> lastTicketPurchaseTime = new HashMap<>();
+    private final Map<Long, AtomicLong> lastTicketReleaseTime = new HashMap<>();
     private final ActivityController activityController;
     public TicketPool(SystemConfiguration config, EventRepository eventRepository, ActivityController activityController) {
         this.config = config;
         this.eventRepository = eventRepository;
         this.events = eventRepository.findAll();
         this.activityController = activityController;
+    }
+
+    public synchronized boolean canCustomerPurchase(Long customerId, int tickets) {
+        long currentTime = System.currentTimeMillis();
+        long lastPurchaseTime = lastTicketPurchaseTime.getOrDefault(customerId, new AtomicLong(0)).get();
+
+        long timeElapsed = currentTime - lastPurchaseTime;
+        long customerRetrievalRateMillis = 60 * 60 * 1000 / config.getCustomerRetrievalRate(); // in milliseconds
+
+        if (timeElapsed < customerRetrievalRateMillis) {
+            return false; // Cannot purchase yet
+        }
+
+        lastTicketPurchaseTime.put(customerId, new AtomicLong(currentTime));
+        return true; // Allow purchase
+    }
+
+    public synchronized boolean canVendorRelease(Long eventId, int tickets) {
+        long currentTime = System.currentTimeMillis();
+        long lastReleaseTime = lastTicketReleaseTime.getOrDefault(eventId, new AtomicLong(0)).get();
+
+        long timeElapsed = currentTime - lastReleaseTime;
+        long ticketReleaseRateMillis = 60 * 60 * 1000 / config.getTicketReleaseRate(); // in milliseconds
+
+        if (timeElapsed < ticketReleaseRateMillis) {
+            return false; // Cannot release yet
+        }
+
+        lastTicketReleaseTime.put(eventId, new AtomicLong(currentTime));
+        return true; // Allow ticket release
     }
 
     public synchronized void addEvent(Event event) {

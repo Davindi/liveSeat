@@ -96,6 +96,11 @@ public class VendorService {
     }
 
     public void releaseMoreTickets(Long eventId, int additionalTickets) {
+        if (!ticketPool.canVendorRelease(eventId, additionalTickets)) {
+            activityController.broadcastActivity("Ticket release rate exceeded. Please wait before releasing more tickets.");
+            throw new RuntimeException("Ticket release rate exceeded. Please wait before releasing more tickets.");
+
+        }
         Event event = eventRepository.findById(eventId)
                 .orElseThrow(() -> new RuntimeException("Event not found with ID: " + eventId));
 
@@ -106,7 +111,7 @@ public class VendorService {
         event.setTotalTickets(event.getTotalTickets() + additionalTickets);
         eventRepository.save(event);
         // Broadcast activity
-        activityController.broadcastActivity("add"+ additionalTickets + "to "+event.getEventName());
+        activityController.broadcastActivity("add"+ additionalTickets + " to "+event.getEventName());
         System.out.println("Updated tickets for Event ID: " + eventId + " in the database.");
     }
 
