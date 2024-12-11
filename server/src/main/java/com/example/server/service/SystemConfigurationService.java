@@ -1,6 +1,7 @@
 package com.example.server.service;
 
 
+import com.example.server.controllers.ActivityController;
 import com.example.server.models.SystemConfiguration;
 import com.example.server.repository.SystemConfigurationRepository;
 import org.springframework.stereotype.Service;
@@ -11,8 +12,9 @@ import java.util.Optional;
 public class SystemConfigurationService {
 
     private final SystemConfigurationRepository repository;
-
-    public SystemConfigurationService(SystemConfigurationRepository repository) {
+    private final ActivityController activityController;
+    public SystemConfigurationService(SystemConfigurationRepository repository, ActivityController activityController) {
+        this.activityController = activityController;
         this.repository = repository;
     }
 
@@ -30,6 +32,7 @@ public class SystemConfigurationService {
             config.setTicketReleaseRate(newConfig.getTicketReleaseRate());
             config.setCustomerRetrievalRate(newConfig.getCustomerRetrievalRate());
             config.setMaxTicketCapacity(newConfig.getMaxTicketCapacity());
+
             return repository.save(config);
         } else {
             // Create new configuration
@@ -46,6 +49,7 @@ public class SystemConfigurationService {
                 .orElseThrow(() -> new IllegalStateException("No configuration found. Cannot start system."));
         config.setSystemStarted(true);
         repository.save(config);
+        activityController.broadcastActivity("System started: " + config.getSystemStarted());
         System.out.println("System started: " + config.getSystemStarted()); // Log for debugging
     }
 
@@ -55,6 +59,8 @@ public class SystemConfigurationService {
                 .orElseThrow(() -> new IllegalStateException("No configuration found."));
         config.setSystemStarted(false);
         repository.save(config);
+
+        activityController.broadcastActivity("System stoped: " + config.getSystemStarted());
     }
 
 

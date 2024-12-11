@@ -10,9 +10,14 @@ public class CorsConfig implements WebMvcConfigurer {
     @Override
     public void addCorsMappings(CorsRegistry registry) {
         registry.addMapping("/**")
-                .allowedOrigins("http://localhost:62014")
+                .allowedOrigins("http://localhost:4200")
                 .allowedMethods("GET", "POST", "PUT", "DELETE", "OPTIONS")
                 .allowedHeaders("*")
                 .allowCredentials(true);
+
+//        // Allow the WebSocket endpoint to handle CORS requests
+//        registry.addMapping("/ws/")
+//                .allowedOrigins("http://localhost:4200")  // Same as front-end URL
+//                .allowCredentials(true);
     }
 }

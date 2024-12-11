@@ -1,5 +1,6 @@
 package com.example.server.service;
 
+import com.example.server.controllers.ActivityController;
 import com.example.server.dto.SignUpDto;
 import com.example.server.dto.SignInDto;
 import com.example.server.exception.UserAlreadyExistsException;
@@ -20,11 +21,13 @@ public class AuthService {
 
     private UserRepository userRepository;
     private PasswordEncoder passwordEncoder;
+    private final ActivityController activityController;
 
     @Autowired
-    public AuthService(UserRepository userRepository, PasswordEncoder passwordEncoder) {
+    public AuthService(UserRepository userRepository, PasswordEncoder passwordEncoder, ActivityController activityController) {
         this.userRepository = userRepository;
         this.passwordEncoder = passwordEncoder;
+        this.activityController = activityController;
     }
 
     public User register(SignUpDto signUpDto) {
@@ -40,6 +43,8 @@ public class AuthService {
         String encodedPassword = passwordEncoder.encode(signUpDto.getPassword());
         User user = new User(signUpDto.getUsername(), encodedPassword, signUpDto.getEmail(), signUpDto.getRole(), signUpDto.getFirstname());
         userRepository.save(user);
+        // Broadcast activity
+        activityController.broadcastActivity("New user registered: " + signUpDto.getUsername());
         return user;
     }
 
@@ -47,6 +52,7 @@ public class AuthService {
     public Boolean loginUser(SignInDto signInDto) {
         Optional<User> user = userRepository.findByUsername(signInDto.getUsername());
         if (user.isPresent() && passwordEncoder.matches(signInDto.getPassword(), user.get().getPassword())) {
+            activityController.broadcastActivity("user loged: " +signInDto.getUsername());
             return true;
         }else {
             return false;
