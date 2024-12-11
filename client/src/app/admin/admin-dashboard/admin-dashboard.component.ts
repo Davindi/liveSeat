@@ -1,5 +1,5 @@
 import { Component ,OnInit} from '@angular/core';
-import { WebSocketService } from '../../service/websocket.service';
+import { WebsocketService } from '../../service/websocket.service';
 import { CommonModule } from '@angular/common';
 import { NzButtonModule, NzButtonSize } from 'ng-zorro-antd/button';
 import { NzModalModule } from 'ng-zorro-antd/modal';
@@ -9,6 +9,7 @@ import { ReactiveFormsModule } from '@angular/forms';
 import { AppService } from '../../service/app.service';
 import { log } from 'console';
 import { AdminDashboardService } from './admin-dashboard.service';
+import { Subscription } from 'rxjs';
 @Component({
   selector: 'app-admin-dashboard',
   standalone: true,
@@ -26,9 +27,9 @@ export class AdminDashboardComponent implements OnInit{
   //logs: { timestamp: string; message: string }[] = [];
   isSystemStarted: boolean = false; 
   currentConfig: any = null;
-  logs: string[] = [];
-
-  constructor(private fb: FormBuilder, private notification: NzNotificationService, private websocketService: WebSocketService,private adminDashboardService: AdminDashboardService,private appService: AppService,) {
+  logs: string[] = []; // Store the logs
+  private logSubscription: Subscription | undefined;
+  constructor(private fb: FormBuilder, private notification: NzNotificationService, private websocketService: WebsocketService,private adminDashboardService: AdminDashboardService,private appService: AppService,) {
     this.configForm = this.fb.group({
       totalTickets: [null, [Validators.required, Validators.min(1)]],
       ticketReleaseRate: [null, [Validators.required, Validators.min(1)]],
@@ -39,16 +40,9 @@ export class AdminDashboardComponent implements OnInit{
 
   ngOnInit(): void {
 
-    // Connect WebSocket
-  this.websocketService.connect('ws://localhost:8080/ws');
-
-  // Subscribe to WebSocket messages
-  this.websocketService.onMessage().subscribe({
-    next: (message: string) => {
-      this.adminDashboardService.addLog(message);
-    },
-    error: (err) => console.error('WebSocket error:', err),
-  });
+    this.logSubscription = this.websocketService.getLogs().subscribe((logs) => {
+      this.logs = logs;
+    });
 
   // Subscribe to logs from AdminDashboardService
   this.adminDashboardService.getLogs().subscribe((logs) => {
@@ -68,6 +62,7 @@ export class AdminDashboardComponent implements OnInit{
       },
     });
   }
+  
   
   showModal(): void {
     this.isVisible = true;

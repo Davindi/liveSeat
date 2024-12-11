@@ -1,63 +1,56 @@
-import { Injectable } from '@angular/core';
-import { Observable, Subject } from 'rxjs';
+import { Injectable, OnDestroy } from '@angular/core';
+import { CompatClient, Stomp } from '@stomp/stompjs';
+import { StompSubscription } from '@stomp/stompjs/src/stomp-subscription';
+import { BehaviorSubject } from 'rxjs';
 
 @Injectable({
-  providedIn: 'root',
+  providedIn: 'root'
 })
-export class WebSocketService {
-  private socket: WebSocket | null = null;
-  private messages: Subject<string> = new Subject<string>();
+export class WebsocketService implements OnDestroy {
+  private connection: CompatClient | undefined = undefined;
+  private subscription: StompSubscription | undefined;
+  private activityLogs = new BehaviorSubject<string[]>([]); // Stores logs
 
-  connect(url: string): void {
-    try {
-      this.socket = new WebSocket(url);
+  constructor() {
+    this.connection = Stomp.client('ws://localhost:8080/ws'); // Your WebSocket endpoint
+    this.connectToWebSocket();
+  }
 
-      this.socket.onopen = () => {
-        console.log('WebSocket connected');
-      };
+  // Connect to the WebSocket server
+  private connectToWebSocket(): void {
+    this.connection?.connect({}, () => {
+      console.log('Connected to WebSocket');
+      
+      // Listen for messages on the /topic/activities topic
+      this.subscription = this.connection?.subscribe('/topic/activities', message => {
+        if (message.body) {
+          this.addLog(message.body); // Add the log received to the logs
+        }
+      });
+    });
+  }
 
-      this.socket.onmessage = (event) => {
-        console.log('Message from server:', event.data);
-        this.messages.next(event.data); // Emit received messages
-      };
-
-      this.socket.onerror = (error) => {
-        console.error('WebSocket error:', error);
-      };
-
-      this.socket.onclose = (event) => {
-        console.warn('WebSocket closed:', event);
-        this.reconnect(url); // Attempt reconnection
-      };
-    } catch (error) {
-      console.error('Failed to connect to WebSocket:', error);
+  // Send activity logs (if needed)
+  public sendActivityLog(log: string): void {
+    if (this.connection && this.connection.connected) {
+      this.connection.send('/app/activity', {}, log);
     }
   }
 
-  reconnect(url: string, retries: number = 3, delay: number = 2000): void {
-    let attempts = 0;
-    const tryReconnect = () => {
-      if (attempts < retries) {
-        attempts++;
-        console.log(`Reconnect attempt #${attempts}`);
-        setTimeout(() => {
-          this.connect(url);
-        }, delay);
-      } else {
-        console.error('Max reconnect attempts reached');
-      }
-    };
-    tryReconnect();
+  // Adds new log to the BehaviorSubject (which is observable)
+  private addLog(log: string): void {
+    this.activityLogs.next([...this.activityLogs.value, log]); // Append to the list of logs
   }
 
-  onMessage(): Observable<string> {
-    return this.messages.asObservable(); // Return observable for messages
+  // Get logs as an observable
+  public getLogs() {
+    return this.activityLogs.asObservable();
   }
 
-  close(): void {
-    if (this.socket) {
-      this.socket.close();
-      this.socket = null;
+  // Cleanup when the service is destroyed
+  ngOnDestroy(): void {
+    if (this.subscription) {
+      this.subscription.unsubscribe();
     }
   }
 }
