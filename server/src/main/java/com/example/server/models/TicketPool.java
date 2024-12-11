@@ -1,5 +1,6 @@
 package com.example.server.models;
 
+import com.example.server.controllers.ActivityController;
 import com.example.server.repository.EventRepository;
 
 import java.util.ArrayList;
@@ -13,16 +14,20 @@ public class TicketPool {
     private final SystemConfiguration config;
     private final EventRepository eventRepository;
     private  List<Event> events = new ArrayList<>();
-    public TicketPool(SystemConfiguration config, EventRepository eventRepository) {
+    private final ActivityController activityController;
+    public TicketPool(SystemConfiguration config, EventRepository eventRepository, ActivityController activityController) {
         this.config = config;
         this.eventRepository = eventRepository;
         this.events = eventRepository.findAll();
+        this.activityController = activityController;
     }
 
     public synchronized void addEvent(Event event) {
         // Set initial status as "Active" when the event is created
         event.setStatus("Active");
         eventMap.put(event.getEventName(), event);
+        // Broadcast activity
+        activityController.broadcastActivity("Event added: " + event.getEventName() + " with status: " + event.getStatus());
         System.out.println("Event added: " + event.getEventName() + " with status: " + event.getStatus());
     }
     public synchronized List<Event> getAllEvents() {
@@ -96,6 +101,8 @@ public class TicketPool {
         if (event != null && event.getRemainingTickets() >= tickets) {
             event.setTicketsSold(event.getTicketsSold() + tickets);
             eventRepository.save(event);
+            // Broadcast activity
+            activityController.broadcastActivity("Buy" + tickets + "for" + event.getEventName());
             return true;
         }
         return false;

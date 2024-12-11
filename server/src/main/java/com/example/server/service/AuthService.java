@@ -44,7 +44,7 @@ public class AuthService {
         User user = new User(signUpDto.getUsername(), encodedPassword, signUpDto.getEmail(), signUpDto.getRole(), signUpDto.getFirstname());
         userRepository.save(user);
         // Broadcast activity
-        activityController.broadcastActivity("New user registered: " + signUpDto.getUsername());
+        activityController.broadcastActivity("New " + signUpDto.getUsername() +"user registered");
         return user;
     }
 
@@ -52,7 +52,7 @@ public class AuthService {
     public Boolean loginUser(SignInDto signInDto) {
         Optional<User> user = userRepository.findByUsername(signInDto.getUsername());
         if (user.isPresent() && passwordEncoder.matches(signInDto.getPassword(), user.get().getPassword())) {
-            activityController.broadcastActivity("user loged: " +signInDto.getUsername());
+            activityController.broadcastActivity(signInDto.getUsername()+" loged in successfully " );
             return true;
         }else {
             return false;

@@ -1,5 +1,6 @@
 package com.example.server.service;
 
+import com.example.server.controllers.ActivityController;
 import com.example.server.dto.EventRequest;
 import com.example.server.enums.UserRole;
 import com.example.server.models.*;
@@ -17,17 +18,19 @@ public class VendorService {
     private final TicketPool ticketPool;
     private final ExecutorService executorService = Executors.newFixedThreadPool(5); // 5 vendors
     private final EventRepository eventRepository;
+    private final ActivityController activityController;
 
     @Autowired
     private UserRepository userRepository;
 
-    public VendorService(SystemConfigurationService configService, EventRepository eventRepository) {
+    public VendorService(SystemConfigurationService configService, EventRepository eventRepository, ActivityController activityController) {
         this.eventRepository = eventRepository;
+        this.activityController = activityController;
         SystemConfiguration config = configService.getSystemConfiguration();
         if (config == null) {
             throw new IllegalStateException("System configuration not found. Please set up the configuration before starting vendors.");
         }
-        this.ticketPool = new TicketPool(config, eventRepository);
+        this.ticketPool = new TicketPool(config, eventRepository,activityController);
     }
 
 //    public void startVendors() {
@@ -71,7 +74,8 @@ public class VendorService {
         // Save to DB
         eventRepository.save(event);
         System.out.println("Event added: " + event.getEventName());
-
+        // Broadcast activity
+        activityController.broadcastActivity("sucessfully added event" + event.getEventName());
         // Call the addEvent method in TicketPool
         ticketPool.addEvent(event);
     }
@@ -86,6 +90,8 @@ public class VendorService {
 
         // Save the updated event back to the database
         eventRepository.save(event);
+        // Broadcast activity
+        activityController.broadcastActivity("sucessfully updated event" + event.getEventName());
         System.out.println("Event status updated: ID=" + eventId + ", New Status=" + status);
     }
 
@@ -99,6 +105,8 @@ public class VendorService {
         // Update the database
         event.setTotalTickets(event.getTotalTickets() + additionalTickets);
         eventRepository.save(event);
+        // Broadcast activity
+        activityController.broadcastActivity("add"+ additionalTickets + "to "+event.getEventName());
         System.out.println("Updated tickets for Event ID: " + eventId + " in the database.");
     }
 

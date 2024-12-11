@@ -1,5 +1,6 @@
 package com.example.server.service;
 
+import com.example.server.controllers.ActivityController;
 import com.example.server.dto.EventTicket;
 import com.example.server.enums.UserRole;
 import com.example.server.models.*;
@@ -18,6 +19,7 @@ public class CustomerService {
     private final ExecutorService executorService;
     private final EventRepository eventRepository;
     private final TicketRepository ticketRepository;
+    private final ActivityController activityController;
 //    public CustomerService(TicketPool ticketPool) {
 //        this.ticketPool = ticketPool;
 //        this.executorService = Executors.newFixedThreadPool(10); // 10 customers
@@ -25,14 +27,15 @@ public class CustomerService {
     @Autowired
     private UserRepository userRepository;
 
-    public CustomerService(SystemConfigurationService configService, EventRepository eventRepository,TicketRepository ticketRepository ) {
+    public CustomerService(SystemConfigurationService configService, EventRepository eventRepository,TicketRepository ticketRepository , ActivityController activityController ) {
         this.eventRepository = eventRepository;
         this.ticketRepository = ticketRepository;
+        this.activityController = activityController;
         SystemConfiguration config = configService.getSystemConfiguration();
         if (config == null) {
             throw new IllegalStateException("System configuration not found. Please set up the configuration before starting vendors.");
         }
-        this.ticketPool = new TicketPool(config , eventRepository);
+        this.ticketPool = new TicketPool(config , eventRepository,activityController);
         this.executorService = Executors.newFixedThreadPool(10);
     }
 
@@ -71,6 +74,8 @@ public class CustomerService {
             ticket.setEvent(event);       // Set the event
             ticket.setQuantity(tickets);  // Set the ticket quantity
             ticketRepository.save(ticket);
+            // Broadcast activity
+            activityController.broadcastActivity("Successfully purchased " + tickets + " ticket(s) for Event ID: " + eventId);
             return "Successfully purchased " + tickets + " ticket(s) for Event ID: " + eventId;
         } else {
             return "Failed to purchase ticket(s). Please check availability.";
