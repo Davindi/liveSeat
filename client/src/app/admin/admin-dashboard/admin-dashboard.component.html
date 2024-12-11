@@ -1,0 +1,52 @@
+<div class="mx-5 my-2" >
+    <div class=" mb-5 d-flex justify-content-between align-items-center">
+        <h2>Admin Dashboard</h2>
+        <button nz-button [nzType]="'primary'" [nzSize]="size" (click)="showModal()">System Configuration</button>
+        
+    </div>
+    <div class="d-flex col-12">
+        <div class="col-md-6 col-12">
+          <div>
+            <h3>System Status: </h3>
+          </div>
+            <div class="d-flex  align-items-center"> 
+                    <button nz-button class="w-50 mx-2 my-5" nzType="primary" [nzSize]="size" nzShape="round" [disabled]="!currentConfig || isSystemStarted" (click)="toggleSystem('start')">Start System</button>
+                    <button nz-button class="w-50 mx-2 my-5" nzType="primary" nzDanger [nzSize]="size" nzShape="round" [disabled]="!isSystemStarted"  (click)="toggleSystem('stop')">Stop System</button>   
+            </div>  
+            <div  >
+              <h3>System configurations</h3>
+              <div *ngIf="currentConfig">
+                <p>Total Number of Tickets - {{ currentConfig.totalTickets}}</p>
+                <p>Ticket Release Rate - {{ currentConfig.ticketReleaseRate}}</p>
+                <p>Customer Retrieval Rate - {{ currentConfig.customerRetrievalRate }} </p>
+                <p>Maximum Ticket Capacity - {{ currentConfig.maxTicketCapacity }}</p>
+              </div>
+              <p *ngIf="!currentConfig">No configuration available</p>
+            </div> 
+            
+        </div>
+        <div class="col-md-6 col-12">
+            <section>
+                <h4>System Logs</h4>
+                <ul>
+                  <li *ngFor="let log of logs">{{ log }}</li>
+                </ul>
+              </section>
+        </div>
+    </div>
+</div>
+<nz-modal [(nzVisible)]="isVisible" nzTitle="System Configuration" (nzOnCancel)="handleCancel()" (nzOnOk)="handleOk()">
+  <ng-container *nzModalContent>
+    <form [formGroup]="configForm" class="d-flex flex-column">
+      <label>Total Number of Tickets</label>
+      <input nz-input formControlName="totalTickets" type="number" />
+      <label>Ticket Release Rate</label>
+      <input nz-input formControlName="ticketReleaseRate" type="number" />
+      <label>Customer Retrieval Rate</label>
+      <input nz-input formControlName="customerRetrievalRate" type="number" />
+      <label>Maximum Ticket Capacity</label>
+      <input nz-input formControlName="maxTicketCapacity" type="number" />
+    </form>
+  </ng-container>
+</nz-modal>
+  
