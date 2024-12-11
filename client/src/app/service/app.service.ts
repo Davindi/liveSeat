@@ -62,7 +62,7 @@ updateEventStatus(eventId: number, status: string): Observable<any> {
 
   // Add more tickets to the event
   addTickets(eventId: string, tickets: number): Observable<any> {
-    return this.http.put<any>(`${this.BASE}/vendor/events/${eventId}/addTickets`, { tickets });
+    return this.http.put<any>(`${this.BASE}/vendor/events/${eventId}/addTickets?additionalTickets=${tickets}`, {});
   }
 //------------------------------customer--------------
   getAllEvents(): Observable<any[]> {

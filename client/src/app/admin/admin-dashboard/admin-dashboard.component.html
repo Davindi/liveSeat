@@ -29,9 +29,7 @@
             <section>
                 <h4>System Logs</h4>
                 <ul>
-                  <li *ngFor="let log of logs">
-                    {{ log.timestamp }} - {{ log.message }}
-                  </li>
+                  <li *ngFor="let log of logs">{{ log }}</li>
                 </ul>
               </section>
         </div>

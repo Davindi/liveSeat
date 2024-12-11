@@ -1,4 +1,5 @@
-import { Component } from '@angular/core';
+import { Component ,OnInit} from '@angular/core';
+import { WebSocketService } from '../../service/websocket.service';
 import { CommonModule } from '@angular/common';
 import { NzButtonModule, NzButtonSize } from 'ng-zorro-antd/button';
 import { NzModalModule } from 'ng-zorro-antd/modal';
@@ -7,25 +8,27 @@ import { NzNotificationService } from 'ng-zorro-antd/notification';
 import { ReactiveFormsModule } from '@angular/forms';
 import { AppService } from '../../service/app.service';
 import { log } from 'console';
+import { AdminDashboardService } from './admin-dashboard.service';
 @Component({
   selector: 'app-admin-dashboard',
   standalone: true,
   imports: [NzButtonModule,NzModalModule, ReactiveFormsModule, CommonModule],
   templateUrl: './admin-dashboard.component.html',
-  styleUrl: './admin-dashboard.component.css'
+  styleUrl: './admin-dashboard.component.css',
+  providers: [AdminDashboardService]
 })
-export class AdminDashboardComponent {
+export class AdminDashboardComponent implements OnInit{
   size: NzButtonSize = 'large';
  
   isVisible = false;
   isConfigured = false;
   configForm: FormGroup;
-  logs: { timestamp: string; message: string }[] = [];
+  //logs: { timestamp: string; message: string }[] = [];
   isSystemStarted: boolean = false; 
   currentConfig: any = null;
- 
+  logs: string[] = [];
 
-  constructor(private fb: FormBuilder, private notification: NzNotificationService,private appService: AppService,) {
+  constructor(private fb: FormBuilder, private notification: NzNotificationService, private websocketService: WebSocketService,private adminDashboardService: AdminDashboardService,private appService: AppService,) {
     this.configForm = this.fb.group({
       totalTickets: [null, [Validators.required, Validators.min(1)]],
       ticketReleaseRate: [null, [Validators.required, Validators.min(1)]],
@@ -35,6 +38,23 @@ export class AdminDashboardComponent {
   }
 
   ngOnInit(): void {
+
+    // Connect WebSocket
+  this.websocketService.connect('ws://localhost:8080/ws');
+
+  // Subscribe to WebSocket messages
+  this.websocketService.onMessage().subscribe({
+    next: (message: string) => {
+      this.adminDashboardService.addLog(message);
+    },
+    error: (err) => console.error('WebSocket error:', err),
+  });
+
+  // Subscribe to logs from AdminDashboardService
+  this.adminDashboardService.getLogs().subscribe((logs) => {
+    this.logs = logs;
+  });
+    
     this.appService.getSystemStatus().subscribe({
       next: (status) => (this.isSystemStarted = status),
       error: (err) => console.error('Error fetching system status', err)
@@ -89,7 +109,7 @@ export class AdminDashboardComponent {
       next: (res: { message: string }) => {
         console.log(res.message, 'stop');
   
-        this.logs.push({ timestamp: new Date().toLocaleString(), message: 'System stopped.' });
+        //this.logs.push({ timestamp: new Date().toLocaleString(), message: 'System stopped.' });
         this.notification.warning('System Stopped', res.message);
         this.isSystemStarted = false; 
       },
@@ -104,7 +124,7 @@ export class AdminDashboardComponent {
       next: (res: { message: string }) => {
         console.log(res.message, 'start');
   
-        this.logs.push({ timestamp: new Date().toLocaleString(), message: 'System started.' });
+        //this.logs.push({ timestamp: new Date().toLocaleString(), message: 'System started.' });
         this.notification.success('System Started', res.message);
         this.isSystemStarted = true; 
       },
@@ -119,10 +139,7 @@ export class AdminDashboardComponent {
     this.appService.saveSystemConfiguration(formValues).subscribe({
       next: (response) => {
         this.currentConfig = response; 
-        this.logs.push({
-          timestamp: new Date().toLocaleString(),
-          message: `System configured with values: ${JSON.stringify(this.currentConfig)}`
-        });
+        
         this.notification.success('System Configured', 'The system has been configured successfully.');
         this.isVisible = false;
         this.isConfigured = true;
