@@ -1,11 +1,13 @@
 package com.example.server.models;
 
+import com.example.server.controllers.ActivityController;
 import com.example.server.repository.EventRepository;
 
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
+import java.util.concurrent.atomic.AtomicLong;
 import java.util.stream.Collectors;
 
 public class TicketPool {
@@ -13,16 +15,52 @@ public class TicketPool {
     private final SystemConfiguration config;
     private final EventRepository eventRepository;
     private  List<Event> events = new ArrayList<>();
-    public TicketPool(SystemConfiguration config, EventRepository eventRepository) {
+    private final Map<Long, AtomicLong> lastTicketPurchaseTime = new HashMap<>();
+    private final Map<Long, AtomicLong> lastTicketReleaseTime = new HashMap<>();
+    private final ActivityController activityController;
+    public TicketPool(SystemConfiguration config, EventRepository eventRepository, ActivityController activityController) {
         this.config = config;
         this.eventRepository = eventRepository;
         this.events = eventRepository.findAll();
+        this.activityController = activityController;
+    }
+
+    public synchronized boolean canCustomerPurchase(Long customerId, int tickets) {
+        long currentTime = System.currentTimeMillis();
+        long lastPurchaseTime = lastTicketPurchaseTime.getOrDefault(customerId, new AtomicLong(0)).get();
+
+        long timeElapsed = currentTime - lastPurchaseTime;
+        long customerRetrievalRateMillis = 60 * 60 * 1000 / config.getCustomerRetrievalRate(); // in milliseconds
+
+        if (timeElapsed < customerRetrievalRateMillis) {
+            return false; // Cannot purchase yet
+        }
+
+        lastTicketPurchaseTime.put(customerId, new AtomicLong(currentTime));
+        return true; // Allow purchase
+    }
+
+    public synchronized boolean canVendorRelease(Long eventId, int tickets) {
+        long currentTime = System.currentTimeMillis();
+        long lastReleaseTime = lastTicketReleaseTime.getOrDefault(eventId, new AtomicLong(0)).get();
+
+        long timeElapsed = currentTime - lastReleaseTime;
+        long ticketReleaseRateMillis = 60 * 60 * 1000 / config.getTicketReleaseRate(); // in milliseconds
+
+        if (timeElapsed < ticketReleaseRateMillis) {
+            return false; // Cannot release yet
+        }
+
+        lastTicketReleaseTime.put(eventId, new AtomicLong(currentTime));
+        return true; // Allow ticket release
     }
 
     public synchronized void addEvent(Event event) {
         // Set initial status as "Active" when the event is created
         event.setStatus("Active");
         eventMap.put(event.getEventName(), event);
+        // Broadcast activity
+        activityController.broadcastActivity("Event added: " + event.getEventName() + " with status: " + event.getStatus());
         System.out.println("Event added: " + event.getEventName() + " with status: " + event.getStatus());
     }
     public synchronized List<Event> getAllEvents() {
@@ -96,6 +134,8 @@ public class TicketPool {
         if (event != null && event.getRemainingTickets() >= tickets) {
             event.setTicketsSold(event.getTicketsSold() + tickets);
             eventRepository.save(event);
+            // Broadcast activity
+            activityController.broadcastActivity("Buy" + tickets + "for" + event.getEventName());
             return true;
         }
         return false;

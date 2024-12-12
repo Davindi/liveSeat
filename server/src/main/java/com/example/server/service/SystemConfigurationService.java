@@ -13,6 +13,7 @@ public class SystemConfigurationService {
 
     private final SystemConfigurationRepository repository;
     private final ActivityController activityController;
+
     public SystemConfigurationService(SystemConfigurationRepository repository, ActivityController activityController) {
         this.activityController = activityController;
         this.repository = repository;
@@ -32,10 +33,13 @@ public class SystemConfigurationService {
             config.setTicketReleaseRate(newConfig.getTicketReleaseRate());
             config.setCustomerRetrievalRate(newConfig.getCustomerRetrievalRate());
             config.setMaxTicketCapacity(newConfig.getMaxTicketCapacity());
-
+            // Broadcast activity
+            activityController.broadcastActivity("successfully updated configuration" + config.toString());
             return repository.save(config);
         } else {
             // Create new configuration
+            // Broadcast activity
+            activityController.broadcastActivity("successfully added configuration" + newConfig.toString());
             return repository.save(newConfig);
         }
     }
@@ -49,7 +53,7 @@ public class SystemConfigurationService {
                 .orElseThrow(() -> new IllegalStateException("No configuration found. Cannot start system."));
         config.setSystemStarted(true);
         repository.save(config);
-        activityController.broadcastActivity("System started: " + config.getSystemStarted());
+        activityController.broadcastActivity("System started " );
         System.out.println("System started: " + config.getSystemStarted()); // Log for debugging
     }
 
@@ -60,7 +64,7 @@ public class SystemConfigurationService {
         config.setSystemStarted(false);
         repository.save(config);
 
-        activityController.broadcastActivity("System stoped: " + config.getSystemStarted());
+        activityController.broadcastActivity("System stoped" );
     }
 
 
