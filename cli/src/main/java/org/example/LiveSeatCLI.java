@@ -39,8 +39,24 @@ public class LiveSeatCLI {
             }
         }
     }
-
     private static LiveSeatConfiguration setupConfiguration(Scanner scanner) {
+        // Check if saved config exists and prompt the user to load or enter new settings
+        System.out.print("Would you like to use the saved configuration? (yes/no): ");
+        String choice = scanner.nextLine().trim().toLowerCase();
+
+        if (choice.equals("yes")) {
+            LiveSeatConfiguration savedConfig = LiveSeatConfigurationManager.loadConfiguration();
+            if (savedConfig != null) {
+                return savedConfig;
+            } else {
+                System.out.println("No saved configuration found, please enter new settings.");
+            }
+        }
+
+        // If no saved config or user chooses to enter new config
+        return enterNewConfiguration(scanner);
+    }
+    private static LiveSeatConfiguration enterNewConfiguration(Scanner scanner) {
         System.out.print("Enter Total Number of Tickets: ");
         int totalTickets = getIntInput(scanner);
 
@@ -52,8 +68,16 @@ public class LiveSeatCLI {
 
         System.out.print("Enter Maximum Ticket Capacity: ");
         int maxTicketCapacity = getIntInput(scanner);
+        LiveSeatConfiguration config = new LiveSeatConfiguration(totalTickets, ticketReleaseRate, customerRetrievalRate, maxTicketCapacity);
 
-        return new LiveSeatConfiguration(totalTickets, ticketReleaseRate, customerRetrievalRate, maxTicketCapacity);
+        // Save the configuration to file
+        System.out.print("Would you like to save this configuration? (yes/no): ");
+        String saveChoice = scanner.nextLine().trim().toLowerCase();
+        if (saveChoice.equals("yes")) {
+            LiveSeatConfigurationManager.saveConfiguration(config);
+        }
+
+        return config;
     }
 
     private static int getIntInput(Scanner scanner) {
@@ -77,25 +101,25 @@ public class LiveSeatCLI {
         if (vendor == null || !vendor.isAlive()) {
             vendor = new Vendor(ticketManager, config.getTicketReleaseRate());
             vendor.start();
-            System.out.println("Ticket production started.");
+            System.out.println("Ticket release started.");
         }
 
         if (customer == null || !customer.isAlive()) {
             customer = new customer(ticketManager, config.getCustomerRetrievalRate());
             customer.start();
-            System.out.println("Ticket consumption started.");
+            System.out.println("Ticket buy started.");
         }
     }
 
     private static void stopTicketHandling() {
         if (vendor != null && vendor.isAlive()) {
             vendor.interrupt();
-            System.out.println("Ticket production stopped.");
+            System.out.println("Ticket release stopped.");
         }
 
         if (customer != null && customer.isAlive()) {
             customer.interrupt();
-            System.out.println("Ticket consumption stopped.");
+            System.out.println("Ticket buy stopped.");
         }
     }
 }

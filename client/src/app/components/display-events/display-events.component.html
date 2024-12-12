@@ -1,0 +1,150 @@
+<app-navbar *ngIf="!isVendor()"></app-navbar>
+<div *ngIf="!isVendor() && isSystemStarted" style="background: #ECECEC; padding:30px;" class="d-flex justify-content-center">
+  <div>
+    <button nz-button nzType="primary" (click)="openPurchasedTicketsDrawer()">View Buy Tickets</button>
+  </div>
+  <div class="row mx-5 d-flex flex-wrap">
+    <div class="p-5 col-12 col-md-4" *ngFor="let event of allEvents">
+      <nz-card nzHoverable [nzCover]="coverTemplate">
+        <nz-card-meta [nzTitle]="event.eventName" [nzDescription]="event.ticketPrice"></nz-card-meta>
+        <span class="fw-bold "> {{event.remainingTickets}} Tickets Available</span>
+        <div class="d-flex justify-content-between align-items-center">
+          <span class="fw-bold ">RS {{event.ticketPrice}}</span>
+        <button nz-button nzType="primary" nzShape="round" class="mx-2 " (click)="openBuyTicketsModal(event)">
+          Buy Now
+        </button>
+        </div>
+      </nz-card>
+      <ng-template #coverTemplate>
+        <img alt="example" src="{{ event.imageUrl }}" />
+      </ng-template>
+    </div>
+  </div>
+</div>
+<div *ngIf="isVendor() && isSystemStarted"  class="w-100 m-5">
+  <div class="container w-100">
+    <div class="d-flex justify-content-between w-100">
+      <h1 class="fw-bold">Vendor Dashboard</h1>
+  
+    <button nz-button nzType="primary" (click)="showAddEventModal()">Add Event</button>
+
+    </div>
+    
+  
+    <h3 class="mt-4">Your Events</h3>
+    <nz-table #basicTable [nzBordered]="true" [nzData]="events" [nzBordered]="true" [nzSize]="'middle'" [nzBordered]="true">
+      <thead>
+        <tr>
+          <th nzWidth="25%">Event Name</th>
+          <th nzWidth="25%">Ticket Price</th>
+          <th nzWidth="20%">Total Tickets</th>
+          <th nzWidth="20%">Tickets Sold</th>
+          <th nzWidth="15%">Status</th>
+          <th nzWidth="15%">Action</th>
+        </tr>
+      </thead>
+      <tbody>
+        <tr *ngFor="let event of events">
+          <td>{{ event.eventName }}</td>
+          <td>{{ event.ticketPrice }}</td>
+          <td>{{ event.totalTickets }}</td>
+          <td>{{ event.ticketsSold }}</td>
+          <td>{{ event.status }}</td>
+          <td>
+            
+            <button class="m-1"*ngIf="event.status !== 'Active'" (click)="updateEventStatus(event.id, 'Active')" nz-button nzType="primary">Activate</button>
+            <button class="m-1" *ngIf="event.status === 'Active'" (click)="updateEventStatus(event.id, 'Inactive')" nz-button nzType="primary" nzDanger>Deactivate</button>
+            
+            
+            <button class="m-1" (click)="addMoreTickets(event.id)" nz-button nzType="default">Add Tickets</button>
+          </td>
+        </tr>
+      </tbody>
+    </nz-table>
+  </div>
+  
+  <nz-modal
+    [(nzVisible)]="isAddEventModalVisible"
+    nzTitle="Add Event"
+    (nzOnCancel)="handleAddEventCancel()"
+    (nzOnOk)="handleAddEventOk()"
+  >
+  <ng-container *nzModalContent>
+    <form [formGroup]="addEventForm" class="d-flex flex-column">
+      <label>Event Name</label>
+      <input nz-input formControlName="eventName" />
+  
+      <label>Total Tickets</label>
+      <input type="number" nz-input formControlName="totalTickets" />
+
+      <label>Ticket Price</label>
+      <input type="number" nz-input formControlName="ticketPrice" />
+
+      <label>Event Image URL</label>
+      <input type="text" nz-input formControlName="ticketPrice" />
+    </form>
+  </ng-container>
+    
+  </nz-modal>
+  
+</div>
+<!-- customerrrr -->
+ <!-- Buy Tickets Modal -->
+<nz-modal
+[(nzVisible)]="isBuyTicketsModalVisible"
+nzTitle="Buy Tickets"
+(nzOnCancel)="handleBuyTicketsCancel()"
+(nzOnOk)="handleBuyTicketsSubmit()"
+>
+<ng-container *nzModalContent>
+  <form class="d-flex flex-column">
+    <label>Event Name</label>
+    <input nz-input [value]="selectedEvent?.eventName" disabled />
+
+    <label>Ticket Price</label>
+    <input nz-input [value]="selectedEvent?.ticketPrice" disabled />
+
+    <label>Tickets Count</label>
+    <input
+      type="number"
+      nz-input
+      [(ngModel)]="ticketCount"
+      [ngModelOptions]="{standalone: true}"
+      (ngModelChange)="calculateTotalPrice()"
+      [min]="1"
+      max="{{ selectedEvent?.remainingTickets }}"
+    />
+
+    <label>Total Price</label>
+    <input nz-input [value]="totalPrice" disabled />
+  </form>
+</ng-container>
+</nz-modal>
+
+<!-- Purchased Tickets Drawer -->
+<nz-drawer
+[nzVisible]="isPurchasedTicketsDrawerVisible"
+nzTitle="Purchased Tickets"
+(nzOnClose)="handlePurchasedTicketsDrawerClose()"
+>
+<ng-container *nzDrawerContent>
+  <div *ngFor="let ticket of purchasedTickets" class="card p-5 my-2 d-flex">
+    <div>
+      <h4>{{ ticket.event.eventName }}</h4>
+    <p>Ticket Price: {{ ticket.event.ticketPrice }}</p>
+    <p>Tickets Count: {{ ticket.quantity}}</p>
+    </div>
+    <div>
+      <img alt="example" src="{{ ticket.event.imageUrl }}" />
+    </div>
+    
+  </div>
+</ng-container>
+
+</nz-drawer>
+<div *ngIf=" !isSystemStarted" class="d-flex justify-content-center align-items-center">
+  <div class="d-flex justify-content-center align-items-center">
+    <h1>Wait Until Start System !</h1>
+  </div>
+
+</div>

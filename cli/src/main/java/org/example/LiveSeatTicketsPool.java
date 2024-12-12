@@ -20,9 +20,9 @@ public class LiveSeatTicketsPool {
         synchronized (this) {
             if (ticketsAvailable + tickets <= maxCapacity) {
                 ticketsAvailable += tickets;
-                logTransaction("Produced", tickets);
+                logTransaction("release", tickets);
             } else {
-                System.out.println("Cannot produce " + tickets + " tickets. Exceeds max capacity.");
+                System.out.println("Cannot release " + tickets + " tickets. Exceeds max capacity.");
             }
         }
     }
@@ -31,9 +31,9 @@ public class LiveSeatTicketsPool {
         synchronized (this) {
             if (ticketsAvailable >= tickets) {
                 ticketsAvailable -= tickets;
-                logTransaction("Consumed", tickets);
+                logTransaction("buy", tickets);
             } else {
-                System.out.println("Not enough tickets to consume. Tickets available: " + ticketsAvailable);
+                System.out.println("Not enough tickets to Buy. Tickets available: " + ticketsAvailable);
             }
         }
     }
